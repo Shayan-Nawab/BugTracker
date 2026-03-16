@@ -11,7 +11,7 @@
     <label>Type:
         <select name="file_kind">
             {% for k in file_kinds %}
-            <option>{{ k }}</option>
+            <option value="{{ k }}">{{ k | replace('Product Backlog Item', 'Backlog Item') }}</option>
             {% endfor %}
         </select>
     </label><br>

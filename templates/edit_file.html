@@ -12,7 +12,7 @@
     <label>Type:
         <select name="file_kind">
             {% for k in file_kinds %}
-            <option {% if file.file_kind == k %}selected{% endif %}>{{ k }}</option>
+            <option value="{{ k }}" {% if file.file_kind == k %}selected{% endif %}>{{ k | replace('Product Backlog Item', 'Backlog Item') }}</option>
             {% endfor %}
         </select>
     </label><br>
