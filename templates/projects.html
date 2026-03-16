@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% set breadcrumbs = [{ "label": "Home", "url": url_for("projects") }] %}
+{% block content %}
+<h1>Projects</h1>
+<a href="{{ url_for('new_project') }}">+ New Project</a>
+
+<form class="filters" method="get">
+    <div class="search-row">
+        <input type="text" name="search" placeholder="Search by name or description…" value="{{ search }}">
+        <button type="submit">Search</button>
+        {% if search or has_bugs %}<a href="{{ url_for('projects') }}">Clear</a>{% endif %}
+    </div>
+    <div class="filter-row">
+        <label>Has Bugs:
+            <select name="has_bugs">
+                <option value="">Any</option>
+                <option value="yes" {% if has_bugs == "yes" %}selected{% endif %}>Yes</option>
+                <option value="no"  {% if has_bugs == "no"  %}selected{% endif %}>No</option>
+            </select>
+        </label>
+    </div>
+</form>
+
+{% if projects %}
+<table>
+    <tr><th>Name</th><th>Description</th><th>Files</th><th>Bugs</th></tr>
+    {% for p in projects %}
+    <tr>
+        <td><a href="{{ url_for('project_detail', project_id=p.id) }}">{{ p.name }}</a></td>
+        <td>{{ p.description or '' }}</td>
+        <td>{{ p.file_count }}</td>
+        <td>{{ p.bug_count }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No projects yet.</p>
+{% endif %}
+{% endblock %}

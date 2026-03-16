@@ -6,6 +6,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+FILE_KINDS = [
+    "Product Backlog Item",
+    "Design Document",
+    "Source Code",
+    "Data File",
+]
+
+STATUSES   = ["Open", "In Progress", "Fixed", "Closed"]
+PRIORITIES = ["Low", "Medium", "High", "Critical"]
+
 
 def get_connection():
     return psycopg2.connect(os.environ["DATABASE_URL"])
@@ -44,9 +54,7 @@ def init_db():
                     id SERIAL PRIMARY KEY,
                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
                     display_name TEXT NOT NULL,
-                    pseudo_path TEXT,
                     file_kind TEXT,
-                    summary TEXT,
                     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
                     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
                 )
@@ -57,14 +65,15 @@ def init_db():
                     id SERIAL PRIMARY KEY,
                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
                     project_file_id INTEGER NOT NULL REFERENCES project_files(id) ON DELETE CASCADE,
-                    title TEXT NOT NULL,
-                    description TEXT,
-                    reporter TEXT NOT NULL,
+                    full_name TEXT NOT NULL,
                     status TEXT NOT NULL DEFAULT 'Open',
+                    found_date DATE,
+                    fixed_date DATE,
                     priority TEXT NOT NULL DEFAULT 'Medium',
-                    steps_to_reproduce TEXT,
-                    expected_result TEXT,
-                    actual_result TEXT,
+                    title TEXT,
+                    description TEXT,
+                    progress_log TEXT,
+                    additional_notes TEXT,
                     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
                     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
                 )
@@ -74,6 +83,21 @@ def init_db():
         conn.close()
 
 
+def drop_and_recreate():
+    """Drop all tables and recreate. Destroys all data."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DROP TABLE IF EXISTS bug_reports CASCADE")
+            cur.execute("DROP TABLE IF EXISTS project_files CASCADE")
+            cur.execute("DROP TABLE IF EXISTS projects CASCADE")
+            cur.execute("DROP TABLE IF EXISTS users CASCADE")
+        conn.commit()
+    finally:
+        conn.close()
+    init_db()
+
+
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
 def validate_user(username: str, password: str) -> bool:
@@ -81,25 +105,21 @@ def validate_user(username: str, password: str) -> bool:
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT password_hash FROM users WHERE username = %s",
-                (username,)
+                "SELECT password_hash FROM users WHERE username = %s", (username,)
             )
             row = cur.fetchone()
-            if row is None:
-                return False
-            return row[0] == hash_password(password)
+            return row is not None and row[0] == hash_password(password)
     finally:
         conn.close()
 
 
 def create_user(username: str, password: str) -> bool:
-    """Returns False if username already exists."""
     conn = get_connection()
     try:
         with conn.cursor() as cur:
             cur.execute(
                 "INSERT INTO users (username, password_hash) VALUES (%s, %s)",
-                (username, hash_password(password))
+                (username, hash_password(password)),
             )
         conn.commit()
         return True
@@ -117,11 +137,7 @@ def create_project(name: str, description: str, owner: str):
     try:
         with conn.cursor() as cur:
             cur.execute(
-                """
-                INSERT INTO projects (name, description, owner)
-                VALUES (%s, %s, %s)
-                RETURNING id
-                """,
+                "INSERT INTO projects (name, description, owner) VALUES (%s, %s, %s) RETURNING id",
                 (name, description or None, owner),
             )
             project_id = cur.fetchone()[0]
@@ -137,16 +153,15 @@ def get_projects(owner: str):
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(
                 """
-                SELECT
-                    p.*,
+                SELECT p.*,
                     COUNT(DISTINCT pf.id) AS file_count,
-                    COUNT(DISTINCT b.id) AS bug_count
+                    COUNT(DISTINCT b.id)  AS bug_count
                 FROM projects p
                 LEFT JOIN project_files pf ON pf.project_id = p.id
-                LEFT JOIN bug_reports b ON b.project_id = p.id
+                LEFT JOIN bug_reports   b  ON b.project_id  = p.id
                 WHERE p.owner = %s
                 GROUP BY p.id
-                ORDER BY p.updated_at DESC, p.created_at DESC
+                ORDER BY p.updated_at DESC
                 """,
                 (owner,),
             )
@@ -167,23 +182,17 @@ def get_project_by_id(project_id: int):
 
 # ── Project Files ─────────────────────────────────────────────────────────────
 
-def create_project_file(project_id: int, display_name: str, pseudo_path: str,
-                        file_kind: str, summary: str):
+def create_project_file(project_id: int, display_name: str, file_kind: str):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
             cur.execute(
-                """
-                INSERT INTO project_files
-                    (project_id, display_name, pseudo_path, file_kind, summary)
-                VALUES (%s, %s, %s, %s, %s)
-                RETURNING id
-                """,
-                (project_id, display_name, pseudo_path or None, file_kind or None, summary or None),
+                "INSERT INTO project_files (project_id, display_name, file_kind) VALUES (%s, %s, %s) RETURNING id",
+                (project_id, display_name, file_kind or None),
             )
-            project_file_id = cur.fetchone()[0]
+            file_id = cur.fetchone()[0]
         conn.commit()
-        return project_file_id
+        return file_id
     finally:
         conn.close()
 
@@ -194,15 +203,14 @@ def get_project_files(project_id: int):
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(
                 """
-                SELECT
-                    pf.*,
+                SELECT pf.*,
                     COUNT(b.id) AS bug_count,
-                    COUNT(*) FILTER (WHERE b.status = 'Open') AS open_bug_count
+                    COUNT(*) FILTER (WHERE b.status NOT IN ('Fixed', 'Closed')) AS open_bug_count
                 FROM project_files pf
                 LEFT JOIN bug_reports b ON b.project_file_id = pf.id
                 WHERE pf.project_id = %s
                 GROUP BY pf.id
-                ORDER BY pf.updated_at DESC, pf.created_at DESC
+                ORDER BY pf.updated_at DESC
                 """,
                 (project_id,),
             )
@@ -211,34 +219,38 @@ def get_project_files(project_id: int):
         conn.close()
 
 
+def delete_project_file(file_id: int):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM project_files WHERE id = %s", (file_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
 # ── Bug Reports ───────────────────────────────────────────────────────────────
 
-def create_bug_report(project_id: int, project_file_id: int, title: str,
-                      description: str, reporter: str, status: str, priority: str,
-                      steps_to_reproduce: str, expected_result: str,
-                      actual_result: str):
+def create_bug_report(project_id: int, project_file_id: int, full_name: str,
+                      status: str, found_date: str, fixed_date: str,
+                      priority: str, title: str, description: str,
+                      progress_log: str, additional_notes: str):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 INSERT INTO bug_reports
-                    (project_id, project_file_id, title, description, reporter,
-                     status, priority, steps_to_reproduce, expected_result, actual_result)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (project_id, project_file_id, full_name, status, found_date,
+                     fixed_date, priority, title, description, progress_log, additional_notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
                 (
-                    project_id,
-                    project_file_id,
-                    title,
-                    description or None,
-                    reporter,
-                    status,
-                    priority,
-                    steps_to_reproduce or None,
-                    expected_result or None,
-                    actual_result or None,
+                    project_id, project_file_id, full_name, status,
+                    found_date or None, fixed_date or None,
+                    priority, title or None, description or None,
+                    progress_log or None, additional_notes or None,
                 ),
             )
             bug_id = cur.fetchone()[0]
@@ -248,52 +260,25 @@ def create_bug_report(project_id: int, project_file_id: int, title: str,
         conn.close()
 
 
-def get_bug_reports(project_id=None, project_file_id=None,
-                    status_filter=None, priority_filter=None, search_query=None):
+def get_bug_reports(project_id=None, project_file_id=None):
     conn = get_connection()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             query = """
-                SELECT
-                    b.*,
-                    pf.display_name AS file_name,
-                    p.name AS project_name
+                SELECT b.*, pf.display_name AS file_name, p.name AS project_name
                 FROM bug_reports b
                 JOIN project_files pf ON pf.id = b.project_file_id
-                JOIN projects p ON p.id = b.project_id
+                JOIN projects      p  ON p.id  = b.project_id
                 WHERE 1=1
             """
             params = []
-
             if project_id:
                 query += " AND b.project_id = %s"
                 params.append(project_id)
-
             if project_file_id:
                 query += " AND b.project_file_id = %s"
                 params.append(project_file_id)
-
-            if status_filter and status_filter != "All":
-                query += " AND b.status = %s"
-                params.append(status_filter)
-
-            if priority_filter and priority_filter != "All":
-                query += " AND b.priority = %s"
-                params.append(priority_filter)
-
-            if search_query:
-                like = f"%{search_query}%"
-                query += """
-                    AND (
-                        b.title ILIKE %s
-                        OR b.description ILIKE %s
-                        OR b.reporter ILIKE %s
-                        OR b.steps_to_reproduce ILIKE %s
-                    )
-                """
-                params.extend([like, like, like, like])
-
-            query += " ORDER BY b.updated_at DESC, b.created_at DESC"
+            query += " ORDER BY b.updated_at DESC"
             cur.execute(query, params)
             return cur.fetchall()
     finally:
@@ -310,34 +295,32 @@ def get_bug_report_by_id(bug_id: int):
         conn.close()
 
 
-def update_bug_report(bug_id: int, title: str, description: str, status: str,
-                      priority: str, steps_to_reproduce: str,
-                      expected_result: str, actual_result: str):
+def update_bug_report(bug_id: int, full_name: str, status: str, found_date: str,
+                      fixed_date: str, priority: str, title: str,
+                      description: str, progress_log: str, additional_notes: str):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                UPDATE bug_reports
-                SET
-                    title = %s,
-                    description = %s,
-                    status = %s,
-                    priority = %s,
-                    steps_to_reproduce = %s,
-                    expected_result = %s,
-                    actual_result = %s,
-                    updated_at = NOW()
+                UPDATE bug_reports SET
+                    full_name        = %s,
+                    status           = %s,
+                    found_date       = %s,
+                    fixed_date       = %s,
+                    priority         = %s,
+                    title         = %s,
+                    description      = %s,
+                    progress_log     = %s,
+                    additional_notes = %s,
+                    updated_at       = NOW()
                 WHERE id = %s
                 """,
                 (
-                    title,
-                    description or None,
-                    status,
-                    priority,
-                    steps_to_reproduce or None,
-                    expected_result or None,
-                    actual_result or None,
+                    full_name, status,
+                    found_date or None, fixed_date or None,
+                    priority, title or None, description or None,
+                    progress_log or None, additional_notes or None,
                     bug_id,
                 ),
             )

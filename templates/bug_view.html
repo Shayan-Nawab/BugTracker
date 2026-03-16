@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% set breadcrumbs = [
+    { "label": "Home", "url": url_for("projects") },
+    { "label": project.name, "url": url_for("project_detail", project_id=project.id) },
+    { "label": "Bugs", "url": url_for("bugs", project_id=bug.project_id, file_id=bug.project_file_id) },
+    { "label": "Bug #" ~ bug.id ~ " Details", "url": "#" }
+] %}
+{% block content %}
+<div class="detail-header">
+    <h1>{{ bug.title or "Bug #" ~ bug.id }}</h1>
+    <div class="detail-actions">
+        <a href="{{ url_for('bug_edit', bug_id=bug.id) }}"><button type="button">Edit</button></a>
+        <form method="post" action="{{ url_for('delete_bug', bug_id=bug.id) }}"
+              onsubmit="return confirm('Delete this bug?')" style="display:inline">
+            <button type="submit">Delete</button>
+        </form>
+    </div>
+</div>
+
+<table class="detail-table">
+    <tr><th>Title</th>        <td>{{ bug.title or '' }}</td></tr>
+    <tr><th>Reporter</th>     <td>{{ bug.full_name }}</td></tr>
+    <tr><th>Status</th>       <td>{{ bug.status }}</td></tr>
+    <tr><th>Priority</th>     <td>{{ bug.priority }}</td></tr>
+    <tr><th>Found Date</th>   <td>{{ bug.found_date or '—' }}</td></tr>
+    <tr><th>Fixed Date</th>   <td>{{ bug.fixed_date or '—' }}</td></tr>
+    <tr><th>Description</th>  <td class="multiline">{{ bug.description or '—' }}</td></tr>
+    <tr><th>Progress Log</th> <td class="multiline">{{ bug.progress_log or '—' }}</td></tr>
+    <tr><th>Notes</th>        <td class="multiline">{{ bug.additional_notes or '—' }}</td></tr>
+</table>
+
+<br><a href="{{ url_for('bugs', project_id=bug.project_id, file_id=bug.project_file_id) }}">Back to Bugs</a>
+{% endblock %}

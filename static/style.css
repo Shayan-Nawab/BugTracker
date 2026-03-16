@@ -1,0 +1,116 @@
+body {
+    font-family: sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 0.5rem;
+}
+
+nav.breadcrumb {
+    display: block;
+    border-bottom: none;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+nav.breadcrumb a { color: #555; }
+nav.breadcrumb span { font-weight: bold; }
+
+nav strong { margin-right: auto; }
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+}
+
+th { background: #f0f0f0; }
+
+label { display: block; margin: 0.5rem 0; }
+
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.3rem;
+    box-sizing: border-box;
+}
+
+textarea { height: 80px; }
+
+button { margin-top: 0.5rem; padding: 0.4rem 1rem; cursor: pointer; }
+
+.filters {
+    margin: 0.75rem 0;
+}
+
+.filters .search-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.filters .filter-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filters .filter-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.filters input[type="text"] { width: 300px; margin: 0; }
+.filters select { width: auto; margin: 0; }
+.filters button { margin: 0; }
+
+.error { color: red; }
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.detail-header h1 { margin: 0; }
+
+.detail-actions { display: flex; gap: 0.5rem; }
+
+.detail-table { width: auto; }
+.detail-table th {
+    text-align: right;
+    padding-right: 1rem;
+    white-space: nowrap;
+    background: none;
+    font-weight: bold;
+    border: none;
+    border-bottom: 1px solid #eee;
+}
+.detail-table td {
+    border: none;
+    border-bottom: 1px solid #eee;
+}
+.detail-table td.multiline { white-space: pre-wrap; }

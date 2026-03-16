@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% set breadcrumbs = [
+    { "label": "Home", "url": url_for("projects") },
+    { "label": project.name, "url": url_for("project_detail", project_id=project.id) },
+    { "label": "Add Item", "url": "#" }
+] %}
+{% block content %}
+<h1>Add Item to {{ project.name }}</h1>
+<form method="post">
+    <label>Name: <input type="text" name="display_name" required></label><br>
+    <label>Type:
+        <select name="file_kind">
+            {% for k in file_kinds %}
+            <option>{{ k }}</option>
+            {% endfor %}
+        </select>
+    </label><br>
+    <button type="submit">Add</button>
+</form>
+<a href="{{ url_for('project_detail', project_id=project.id) }}">Cancel</a>
+{% endblock %}

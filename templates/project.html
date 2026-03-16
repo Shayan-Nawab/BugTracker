@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% set breadcrumbs = [
+    { "label": "Home", "url": url_for("projects") },
+    { "label": project.name, "url": "#" }
+] %}
+{% block content %}
+<h1>{{ project.name }}</h1>
+<p>{{ project.description or '' }}</p>
+
+<h2>Items</h2>
+<a href="{{ url_for('new_file', project_id=project.id) }}">+ Add Item</a>
+
+<form class="filters" method="get">
+    <div class="search-row">
+        <input type="text" name="search" placeholder="Search by name…" value="{{ search }}">
+        <button type="submit">Search</button>
+        {% if search or kind_filter or has_bugs %}<a href="{{ url_for('project_detail', project_id=project.id) }}">Clear</a>{% endif %}
+    </div>
+    <div class="filter-row">
+        <label>Type:
+            <select name="kind">
+                <option value="">All</option>
+                {% for k in file_kinds %}
+                <option {% if kind_filter == k %}selected{% endif %}>{{ k }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Has Bugs:
+            <select name="has_bugs">
+                <option value="">Any</option>
+                <option value="yes" {% if has_bugs == "yes" %}selected{% endif %}>Yes</option>
+                <option value="no"  {% if has_bugs == "no"  %}selected{% endif %}>No</option>
+            </select>
+        </label>
+    </div>
+</form>
+
+{% if files %}
+<table>
+    <tr><th>Name</th><th>Type</th><th>Bugs</th><th>Active</th><th></th></tr>
+    {% for f in files %}
+    <tr>
+        <td><a href="{{ url_for('bugs', project_id=project.id, file_id=f.id) }}">{{ f.display_name }}</a></td>
+        <td>{{ f.file_kind or '' }}</td>
+        <td>{{ f.bug_count }}</td>
+        <td>{{ f.open_bug_count }}</td>
+        <td>
+            <form method="post" action="{{ url_for('delete_file', project_id=project.id, file_id=f.id) }}"
+                  onsubmit="return confirm('Delete this item and all its bugs?')">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No items yet.</p>
+{% endif %}
+
+<br><a href="{{ url_for('projects') }}">Back to Projects</a>
+{% endblock %}
