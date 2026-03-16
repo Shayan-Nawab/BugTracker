@@ -5,7 +5,7 @@
     <title>BugTracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body style="min-height: 100vh; display: flex; flex-direction: column;">
     <nav>
         <strong>BugTracker</strong>
         {% if session.username %}
@@ -27,13 +27,12 @@
     </nav>
     {% endif %}
 
-    <main>
+    <main style="flex: 1;">
         {% block content %}{% endblock %}
     </main>
+    <footer style="text-align: center;">
+        <p style="color:#888; font-size:0.85rem; margin-bottom:0.75rem;"> BugTracker</p>
+        <p style="color:#888; font-size:0.85rem; margin-bottom:0.75rem;"> Created by Anthony, Hugo, Ridwan and Shayan</p>
+    </footer>
 </body>
-<br><br><br><br>
-<footer style="text-align: center;">
-    <p style="color:#888; font-size:0.85rem; margin-bottom:0.75rem;"> BugTrack</p>
-    <p style="color:#888; font-size:0.85rem; margin-bottom:0.75rem;"> Created by Anthony, Hugo, Ridwan and Shayan</p>
-</footer>
 </html>
