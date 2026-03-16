@@ -155,7 +155,8 @@ def get_projects(owner: str):
                 """
                 SELECT p.*,
                     COUNT(DISTINCT pf.id) AS file_count,
-                    COUNT(DISTINCT b.id)  AS bug_count
+                    COUNT(DISTINCT b.id)  AS bug_count,
+                    COUNT(DISTINCT b.id) FILTER (WHERE b.status NOT IN ('Fixed', 'Closed')) AS open_bug_count
                 FROM projects p
                 LEFT JOIN project_files pf ON pf.project_id = p.id
                 LEFT JOIN bug_reports   b  ON b.project_id  = p.id

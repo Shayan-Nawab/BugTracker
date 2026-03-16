@@ -66,9 +66,9 @@ def projects():
         rows = [p for p in rows if search in p["name"].lower()
                 or search in (p["description"] or "").lower()]
     if has_bugs == "yes":
-        rows = [p for p in rows if p["bug_count"] > 0]
+        rows = [p for p in rows if p["open_bug_count"] > 0]
     elif has_bugs == "no":
-        rows = [p for p in rows if p["bug_count"] == 0]
+        rows = [p for p in rows if p["open_bug_count"] == 0]
     return render_template("projects.html", projects=rows, search=search, has_bugs=has_bugs)
 
 
@@ -111,9 +111,9 @@ def project_detail(project_id):
     if kind_filter:
         files = [f for f in files if f["file_kind"] == kind_filter]
     if has_bugs == "yes":
-        files = [f for f in files if f["bug_count"] > 0]
+        files = [f for f in files if f["open_bug_count"] > 0]
     elif has_bugs == "no":
-        files = [f for f in files if f["bug_count"] == 0]
+        files = [f for f in files if f["open_bug_count"] == 0]
     return render_template("project.html", project=project, files=files,
                            search=search, kind_filter=kind_filter, has_bugs=has_bugs,
                            file_kinds=db.FILE_KINDS)
