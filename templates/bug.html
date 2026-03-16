@@ -8,30 +8,31 @@
 ] %}
 {% block content %}
 <h1>Edit Bug #{{ bug.id }}</h1>
-
-<form method="post">
-    <label>Title: <input type="text" name="title" value="{{ bug.title or '' }}"></label><br>
-    <label>Full Name: <input type="text" name="full_name" value="{{ bug.full_name }}" required></label><br>
-    <label>Status:
+<form method="post" class="page-form">
+    <label>Title <input type="text" name="title" value="{{ bug.title or '' }}"></label>
+    <label>Full Name <input type="text" name="full_name" value="{{ bug.full_name }}" required></label>
+    <label>Status
         <select name="status">
             {% for s in statuses %}
             <option {% if bug.status == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}
         </select>
-    </label><br>
-    <label>Priority:
+    </label>
+    <label>Priority
         <select name="priority">
             {% for p in priorities %}
             <option {% if bug.priority == p %}selected{% endif %}>{{ p }}</option>
             {% endfor %}
         </select>
-    </label><br>
-    <label>Found Date: <input type="date" name="found_date" value="{{ bug.found_date or '' }}"></label><br>
-    <label>Fixed Date: <input type="date" name="fixed_date" value="{{ bug.fixed_date or '' }}"></label><br>
-    <label>Description: <textarea name="description">{{ bug.description or '' }}</textarea></label><br>
-    <label>Progress Log: <textarea name="progress_log">{{ bug.progress_log or '' }}</textarea></label><br>
-    <label>Additional Notes: <textarea name="additional_notes">{{ bug.additional_notes or '' }}</textarea></label><br>
-    <button type="submit">Save Changes</button>
-    <a href="{{ url_for('bug_detail', bug_id=bug.id) }}">Cancel</a>
+    </label>
+    <label>Found Date <input type="date" name="found_date" value="{{ bug.found_date or '' }}"></label>
+    <label>Fixed Date <input type="date" name="fixed_date" value="{{ bug.fixed_date or '' }}"></label>
+    <label>Description <textarea name="description">{{ bug.description or '' }}</textarea></label>
+    <label>Progress Log <textarea name="progress_log">{{ bug.progress_log or '' }}</textarea></label>
+    <label>Additional Notes <textarea name="additional_notes">{{ bug.additional_notes or '' }}</textarea></label>
+    <div class="form-actions">
+        <button type="submit">Save Changes</button>
+        <a href="{{ url_for('bug_detail', bug_id=bug.id) }}">Cancel</a>
+    </div>
 </form>
 {% endblock %}

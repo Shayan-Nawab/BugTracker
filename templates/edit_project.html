@@ -6,10 +6,12 @@
 ] %}
 {% block content %}
 <h1>Edit Project</h1>
-<form method="post">
-    <label>Name: <input type="text" name="name" value="{{ project.name }}" required></label><br>
-    <label>Description: <textarea name="description">{{ project.description or '' }}</textarea></label><br>
-    <button type="submit">Save Changes</button>
-    <a href="{{ url_for('project_detail', project_id=project.id) }}">Cancel</a>
+<form method="post" class="page-form">
+    <label>Name <input type="text" name="name" value="{{ project.name }}" required></label>
+    <label>Description <textarea name="description">{{ project.description or '' }}</textarea></label>
+    <div class="form-actions">
+        <button type="submit">Save Changes</button>
+        <a href="{{ url_for('project_detail', project_id=project.id) }}">Cancel</a>
+    </div>
 </form>
 {% endblock %}

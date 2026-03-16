@@ -6,7 +6,7 @@
 ] %}
 {% block content %}
 <h1>Bug Reports — {{ project.name }}</h1>
-<a href="{{ url_for('new_bug', project_id=project.id, file_id=file_id) }}">+ New Bug</a>
+<a href="{{ url_for('new_bug', project_id=project.id, file_id=file_id) }}" class="action-link">+ New Bug</a>
 
 <form class="filters" method="get">
     <div class="search-row">
