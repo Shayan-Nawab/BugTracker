@@ -5,12 +5,10 @@
 ] %}
 {% block content %}
 <h1>New Project</h1>
-<form method="post" class="page-form">
-    <label>Name <input type="text" name="name" required></label>
-    <label>Description <textarea name="description"></textarea></label>
-    <div class="form-actions">
-        <button type="submit">Create</button>
-        <a href="{{ url_for('projects') }}">Cancel</a>
-    </div>
+<form method="post">
+    <label>Name: <input type="text" name="name" required></label><br>
+    <label>Description: <textarea name="description"></textarea></label><br>
+    <button type="submit">Create</button>
 </form>
+<a href="{{ url_for('projects') }}">Cancel</a>
 {% endblock %}

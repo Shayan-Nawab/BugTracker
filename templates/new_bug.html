@@ -6,28 +6,26 @@
     { "label": "New Bug", "url": "#" }
 ] %}
 {% block content %}
-<h1>New Bug</h1>
-<form method="post" class="page-form">
-    <label>Title <input type="text" name="title"></label>
-    <label>Full Name <input type="text" name="full_name" required></label>
-    <label>Status
+<h1>New Bug — {{ project.name }}</h1>
+<form method="post">
+    <label>Full Name: <input type="text" name="full_name" required></label><br>
+    <label>Status:
         <select name="status">
             {% for s in statuses %}<option>{{ s }}</option>{% endfor %}
         </select>
-    </label>
-    <label>Priority
+    </label><br>
+    <label>Priority:
         <select name="priority">
             {% for p in priorities %}<option {% if p == 'Medium' %}selected{% endif %}>{{ p }}</option>{% endfor %}
         </select>
-    </label>
-    <label>Found Date <input type="date" name="found_date"></label>
-    <label>Fixed Date <input type="date" name="fixed_date"></label>
-    <label>Description <textarea name="description"></textarea></label>
-    <label>Progress Log <textarea name="progress_log"></textarea></label>
-    <label>Additional Notes <textarea name="additional_notes"></textarea></label>
-    <div class="form-actions">
-        <button type="submit">Submit Bug</button>
-        <a href="{{ url_for('bugs', project_id=project.id, file_id=file_id) }}">Cancel</a>
-    </div>
+    </label><br>
+    <label>Title: <input type="text" name="title"></label><br>
+    <label>Found Date: <input type="date" name="found_date"></label><br>
+    <label>Fixed Date: <input type="date" name="fixed_date"></label><br>
+    <label>Description: <textarea name="description"></textarea></label><br>
+    <label>Progress Log: <textarea name="progress_log"></textarea></label><br>
+    <label>Additional Notes: <textarea name="additional_notes"></textarea></label><br>
+    <button type="submit">Submit Bug</button>
 </form>
+<a href="{{ url_for('bugs', project_id=project.id, file_id=file_id) }}">Cancel</a>
 {% endblock %}

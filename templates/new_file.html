@@ -6,18 +6,16 @@
 ] %}
 {% block content %}
 <h1>Add Item to {{ project.name }}</h1>
-<form method="post" class="page-form">
-    <label>Name <input type="text" name="display_name" required></label>
-    <label>Type
+<form method="post">
+    <label>Name: <input type="text" name="display_name" required></label><br>
+    <label>Type:
         <select name="file_kind">
             {% for k in file_kinds %}
             <option>{{ k }}</option>
             {% endfor %}
         </select>
-    </label>
-    <div class="form-actions">
-        <button type="submit">Add</button>
-        <a href="{{ url_for('project_detail', project_id=project.id) }}">Cancel</a>
-    </div>
+    </label><br>
+    <button type="submit">Add</button>
 </form>
+<a href="{{ url_for('project_detail', project_id=project.id) }}">Cancel</a>
 {% endblock %}

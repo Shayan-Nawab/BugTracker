@@ -6,10 +6,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <nav class="topnav">
+    <nav>
         <strong>BugTracker</strong>
         {% if session.username %}
-            <span>{{ session.username }}</span>
+            <span>Logged in as {{ session.username }}</span>
             <a href="{{ url_for('projects') }}">Projects</a>
             <a href="{{ url_for('logout') }}">Logout</a>
         {% endif %}

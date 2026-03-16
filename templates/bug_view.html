@@ -11,14 +11,14 @@
     <div class="detail-actions">
         <a href="{{ url_for('bug_edit', bug_id=bug.id) }}"><button type="button">Edit</button></a>
         <form method="post" action="{{ url_for('delete_bug', bug_id=bug.id) }}"
-              onsubmit="return confirm('Delete this bug?')">
-            <button type="submit" class="btn-delete">Delete</button>
+              onsubmit="return confirm('Delete this bug?')" style="display:inline">
+            <button type="submit">Delete</button>
         </form>
     </div>
 </div>
 
 <table class="detail-table">
-    <tr><th>Title</th>        <td>{{ bug.title or '—' }}</td></tr>
+    <tr><th>Title</th>        <td>{{ bug.title or '' }}</td></tr>
     <tr><th>Reporter</th>     <td>{{ bug.full_name }}</td></tr>
     <tr><th>Status</th>       <td>{{ bug.status }}</td></tr>
     <tr><th>Priority</th>     <td>{{ bug.priority }}</td></tr>
@@ -29,5 +29,5 @@
     <tr><th>Notes</th>        <td class="multiline">{{ bug.additional_notes or '—' }}</td></tr>
 </table>
 
-<br><a href="{{ url_for('bugs', project_id=bug.project_id, file_id=bug.project_file_id) }}">← Back to Bugs</a>
+<br><a href="{{ url_for('bugs', project_id=bug.project_id, file_id=bug.project_file_id) }}">Back to Bugs</a>
 {% endblock %}
