@@ -40,13 +40,15 @@
     <tr><th>Name</th><th>Type</th><th>Bugs</th><th>Active</th><th></th></tr>
     {% for f in files %}
     <tr>
-        <td><a href="{{ url_for('bugs', project_id=project.id, file_id=f.id) }}">{{ f.display_name }}</a></td>
+        <td>{{ f.display_name }}</td>
         <td>{{ f.file_kind or '' }}</td>
         <td>{{ f.bug_count }}</td>
         <td>{{ f.open_bug_count }}</td>
-        <td>
+        <td class="row-actions">
+            <a href="{{ url_for('bugs', project_id=project.id, file_id=f.id) }}"><button type="button">View</button></a>
+            <a href="{{ url_for('edit_file', project_id=project.id, file_id=f.id) }}"><button type="button">Edit</button></a>
             <form method="post" action="{{ url_for('delete_file', project_id=project.id, file_id=f.id) }}"
-                  onsubmit="return confirm('Delete this item and all its bugs?')">
+                  onsubmit="return confirm('Delete this item and all its bugs?')" style="display:inline">
                 <button type="submit">Delete</button>
             </form>
         </td>

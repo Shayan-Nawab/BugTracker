@@ -180,6 +180,29 @@ def get_project_by_id(project_id: int):
         conn.close()
 
 
+def update_project(project_id: int, name: str, description: str):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE projects SET name = %s, description = %s, updated_at = NOW() WHERE id = %s",
+                (name, description or None, project_id),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_project(project_id: int):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM projects WHERE id = %s", (project_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
 # ── Project Files ─────────────────────────────────────────────────────────────
 
 def create_project_file(project_id: int, display_name: str, file_kind: str):
@@ -215,6 +238,29 @@ def get_project_files(project_id: int):
                 (project_id,),
             )
             return cur.fetchall()
+    finally:
+        conn.close()
+
+
+def update_project_file(file_id: int, display_name: str, file_kind: str):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE project_files SET display_name = %s, file_kind = %s, updated_at = NOW() WHERE id = %s",
+                (display_name, file_kind or None, file_id),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_project_file_by_id(file_id: int):
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT * FROM project_files WHERE id = %s", (file_id,))
+            return cur.fetchone()
     finally:
         conn.close()
 

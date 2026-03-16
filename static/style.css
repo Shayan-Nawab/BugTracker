@@ -108,9 +108,18 @@ button { margin-top: 0.5rem; padding: 0.4rem 1rem; cursor: pointer; }
     font-weight: bold;
     border: none;
     border-bottom: 1px solid #eee;
+    vertical-align: top;
 }
 .detail-table td {
     border: none;
     border-bottom: 1px solid #eee;
+    max-width: 600px;
 }
-.detail-table td.multiline { white-space: pre-wrap; }
+.detail-table td.multiline {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.row-actions { white-space: nowrap; }
+.row-actions button { margin: 0 2px; }

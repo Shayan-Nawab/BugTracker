@@ -72,6 +72,23 @@ def projects():
     return render_template("projects.html", projects=rows, search=search, has_bugs=has_bugs)
 
 
+@app.route("/projects/<int:project_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_project(project_id):
+    project = db.get_project_by_id(project_id)
+    if request.method == "POST":
+        db.update_project(project_id, request.form["name"], request.form.get("description", ""))
+        return redirect(url_for("project_detail", project_id=project_id))
+    return render_template("edit_project.html", project=project)
+
+
+@app.route("/projects/<int:project_id>/delete", methods=["POST"])
+@login_required
+def delete_project(project_id):
+    db.delete_project(project_id)
+    return redirect(url_for("projects"))
+
+
 @app.route("/projects/new", methods=["GET", "POST"])
 @login_required
 def new_project():
@@ -116,6 +133,17 @@ def new_file(project_id):
         )
         return redirect(url_for("project_detail", project_id=project_id))
     return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS)
+
+
+@app.route("/projects/<int:project_id>/files/<int:file_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_file(project_id, file_id):
+    project = db.get_project_by_id(project_id)
+    file = db.get_project_file_by_id(file_id)
+    if request.method == "POST":
+        db.update_project_file(file_id, request.form["display_name"], request.form.get("file_kind", ""))
+        return redirect(url_for("project_detail", project_id=project_id))
+    return render_template("edit_file.html", project=project, file=file, file_kinds=db.FILE_KINDS)
 
 
 @app.route("/projects/<int:project_id>/files/<int:file_id>/delete", methods=["POST"])
