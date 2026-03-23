@@ -210,10 +210,16 @@ def new_bug(project_id, file_id):
         full_name = request.form.get("full_name", "").strip()
         title = request.form.get("title", "").strip()
         status = request.form.get("status", "").strip()
-        if not full_name or not title or not status:
+        found_date = request.form.get("found_date", "").strip()
+        fixed_date = request.form.get("fixed_date", "").strip()
+        if not full_name or not title or not status or not found_date:
             return render_template("new_bug.html", project=project, file_id=file_id,
                                    statuses=db.STATUSES, priorities=db.PRIORITIES,
-                                   error="Reporter name, title, and status are required.")
+                                   error="Reporter name, title, status, and found date are required.")
+        if fixed_date and fixed_date < found_date:
+            return render_template("new_bug.html", project=project, file_id=file_id,
+                                   statuses=db.STATUSES, priorities=db.PRIORITIES,
+                                   error="Fixed date must be on or after the found date.")
         if db.bug_title_exists(file_id, title):
             return render_template("new_bug.html", project=project, file_id=file_id,
                                    statuses=db.STATUSES, priorities=db.PRIORITIES,
@@ -222,8 +228,8 @@ def new_bug(project_id, file_id):
             project_id, file_id,
             full_name,
             status,
-            request.form.get("found_date", ""),
-            request.form.get("fixed_date", ""),
+            found_date,
+            fixed_date,
             request.form.get("priority", "Medium"),
             title,
             request.form.get("description", ""),
@@ -252,10 +258,16 @@ def bug_edit(bug_id):
         full_name = request.form.get("full_name", "").strip()
         title = request.form.get("title", "").strip()
         status = request.form.get("status", "").strip()
-        if not full_name or not title or not status:
+        found_date = request.form.get("found_date", "").strip()
+        fixed_date = request.form.get("fixed_date", "").strip()
+        if not full_name or not title or not status or not found_date:
             return render_template("bug.html", bug=bug, project=project,
                                    statuses=db.STATUSES, priorities=db.PRIORITIES,
-                                   error="Reporter name, title, and status are required.")
+                                   error="Reporter name, title, status, and found date are required.")
+        if fixed_date and fixed_date < found_date:
+            return render_template("bug.html", bug=bug, project=project,
+                                   statuses=db.STATUSES, priorities=db.PRIORITIES,
+                                   error="Fixed date must be on or after the found date.")
         if db.bug_title_exists(bug["project_file_id"], title, exclude_id=bug_id):
             return render_template("bug.html", bug=bug, project=project,
                                    statuses=db.STATUSES, priorities=db.PRIORITIES,
@@ -264,8 +276,8 @@ def bug_edit(bug_id):
             bug_id,
             full_name,
             status,
-            request.form.get("found_date", ""),
-            request.form.get("fixed_date", ""),
+            found_date,
+            fixed_date,
             request.form.get("priority", "Medium"),
             title,
             request.form.get("description", ""),

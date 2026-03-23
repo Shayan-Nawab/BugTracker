@@ -26,7 +26,7 @@
             {% endfor %}
         </select>
     </label><br>
-    <label>Found Date: <input type="date" name="found_date" value="{{ bug.found_date or '' }}"></label><br>
+    <label>Found Date <span class="required-star">*</span>: <input type="date" name="found_date" value="{{ bug.found_date or '' }}" required></label><br>
     <label>Fixed Date: <input type="date" name="fixed_date" value="{{ bug.fixed_date or '' }}"></label><br>
     <label>Description: <textarea name="description">{{ bug.description or '' }}</textarea></label><br>
     <label>Progress Log: <textarea name="progress_log">{{ bug.progress_log or '' }}</textarea></label><br>
