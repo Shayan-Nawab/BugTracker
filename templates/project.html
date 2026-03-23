@@ -14,7 +14,7 @@
     <div class="search-row">
         <input type="text" name="search" placeholder="Search by name…" value="{{ search }}">
         <button type="submit">Search</button>
-        {% if search or kind_filter or has_bugs %}<a href="{{ url_for('project_detail', project_id=project.id) }}">Clear</a>{% endif %}
+        {% if search or kind_filter or has_bugs or sprint_filter %}<a href="{{ url_for('project_detail', project_id=project.id) }}">Clear</a>{% endif %}
     </div>
     <div class="filter-row">
         <label>Type:
@@ -32,16 +32,27 @@
                 <option value="no"  {% if has_bugs == "no"  %}selected{% endif %}>No</option>
             </select>
         </label>
+        {% if sprint_numbers %}
+        <label>Sprint:
+            <select name="sprint">
+                <option value="">All</option>
+                {% for s in sprint_numbers %}
+                <option value="{{ s }}" {% if sprint_filter == s|string %}selected{% endif %}>Sprint {{ s }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        {% endif %}
     </div>
 </form>
 
 {% if files %}
 <table>
-    <tr><th>Name</th><th>Type</th><th>Bugs</th><th>Active</th><th>Actions</th></tr>
+    <tr><th>Name</th><th>Type</th><th>Sprint</th><th>Bugs</th><th>Active</th><th>Actions</th></tr>
     {% for f in files %}
     <tr>
         <td>{{ f.display_name }}</td>
         <td>{{ (f.file_kind or '') | replace('Product Backlog Item', 'Backlog Item') }}</td>
+        <td>{{ f.sprint or '' }}</td>
         <td>{{ f.bug_count }}</td>
         <td>{{ f.open_bug_count }}</td>
         <td class="row-actions">

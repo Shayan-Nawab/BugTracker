@@ -20,6 +20,7 @@
             {% endfor %}
         </select>
     </label><br>
+    <label>Sprint: <input type="number" name="sprint" min="1" step="1" value="{{ file.sprint or '' }}" placeholder="Optional"></label><br>
     <button type="submit">Save Changes</button>
     <a href="{{ url_for('project_detail', project_id=project.id) }}">Cancel</a>
 </form>

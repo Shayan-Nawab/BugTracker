@@ -113,9 +113,11 @@ def new_project():
 def project_detail(project_id):
     project = db.get_project_by_id(project_id)
     files = db.get_project_files(project_id)
-    search      = request.args.get("search", "").strip().lower()
-    kind_filter = request.args.get("kind", "")
-    has_bugs    = request.args.get("has_bugs", "")
+    sprint_numbers = db.get_sprint_numbers(project_id)
+    search        = request.args.get("search", "").strip().lower()
+    kind_filter   = request.args.get("kind", "")
+    has_bugs      = request.args.get("has_bugs", "")
+    sprint_filter = request.args.get("sprint", "")
     if search:
         files = [f for f in files if search in f["display_name"].lower()]
     if kind_filter:
@@ -124,8 +126,11 @@ def project_detail(project_id):
         files = [f for f in files if f["open_bug_count"] > 0]
     elif has_bugs == "no":
         files = [f for f in files if f["open_bug_count"] == 0]
+    if sprint_filter:
+        files = [f for f in files if str(f["sprint"] or "") == sprint_filter]
     return render_template("project.html", project=project, files=files,
                            search=search, kind_filter=kind_filter, has_bugs=has_bugs,
+                           sprint_filter=sprint_filter, sprint_numbers=sprint_numbers,
                            file_kinds=db.FILE_KINDS)
 
 
@@ -138,13 +143,20 @@ def new_file(project_id):
     if request.method == "POST":
         display_name = request.form.get("display_name", "").strip()
         file_kind = request.form.get("file_kind", "").strip()
+        sprint_raw = request.form.get("sprint", "").strip()
+        sprint = None
+        if sprint_raw:
+            if not sprint_raw.isdigit() or int(sprint_raw) < 1:
+                return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS,
+                                       error="Sprint must be a positive integer.")
+            sprint = int(sprint_raw)
         if not display_name or not file_kind:
             return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS,
                                    error="Name and Type are required.")
         if db.file_name_exists(project_id, display_name):
             return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS,
                                    error=f'An item named "{display_name}" already exists in this project.')
-        db.create_project_file(project_id, display_name, file_kind)
+        db.create_project_file(project_id, display_name, file_kind, sprint)
         return redirect(url_for("project_detail", project_id=project_id))
     return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS)
 
@@ -157,13 +169,20 @@ def edit_file(project_id, file_id):
     if request.method == "POST":
         display_name = request.form.get("display_name", "").strip()
         file_kind = request.form.get("file_kind", "").strip()
+        sprint_raw = request.form.get("sprint", "").strip()
+        sprint = None
+        if sprint_raw:
+            if not sprint_raw.isdigit() or int(sprint_raw) < 1:
+                return render_template("edit_file.html", project=project, file=file,
+                                       file_kinds=db.FILE_KINDS, error="Sprint must be a positive integer.")
+            sprint = int(sprint_raw)
         if not display_name or not file_kind:
             return render_template("edit_file.html", project=project, file=file,
                                    file_kinds=db.FILE_KINDS, error="Name and Type are required.")
         if db.file_name_exists(project_id, display_name, exclude_id=file_id):
             return render_template("edit_file.html", project=project, file=file,
                                    file_kinds=db.FILE_KINDS, error=f'An item named "{display_name}" already exists in this project.')
-        db.update_project_file(file_id, display_name, file_kind)
+        db.update_project_file(file_id, display_name, file_kind, sprint)
         return redirect(url_for("project_detail", project_id=project_id))
     return render_template("edit_file.html", project=project, file=file, file_kinds=db.FILE_KINDS)
 

@@ -55,9 +55,13 @@ def init_db():
                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
                     display_name TEXT NOT NULL,
                     file_kind TEXT,
+                    sprint INTEGER,
                     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
                     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
                 )
+            """)
+            cur.execute("""
+                ALTER TABLE project_files ADD COLUMN IF NOT EXISTS sprint INTEGER
             """)
 
             cur.execute("""
@@ -265,13 +269,13 @@ def delete_project(project_id: int):
 
 # ── Project Files ─────────────────────────────────────────────────────────────
 
-def create_project_file(project_id: int, display_name: str, file_kind: str):
+def create_project_file(project_id: int, display_name: str, file_kind: str, sprint: int = None):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO project_files (project_id, display_name, file_kind) VALUES (%s, %s, %s) RETURNING id",
-                (project_id, display_name, file_kind or None),
+                "INSERT INTO project_files (project_id, display_name, file_kind, sprint) VALUES (%s, %s, %s, %s) RETURNING id",
+                (project_id, display_name, file_kind or None, sprint),
             )
             file_id = cur.fetchone()[0]
         conn.commit()
@@ -302,15 +306,28 @@ def get_project_files(project_id: int):
         conn.close()
 
 
-def update_project_file(file_id: int, display_name: str, file_kind: str):
+def update_project_file(file_id: int, display_name: str, file_kind: str, sprint: int = None):
     conn = get_connection()
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "UPDATE project_files SET display_name = %s, file_kind = %s, updated_at = NOW() WHERE id = %s",
-                (display_name, file_kind or None, file_id),
+                "UPDATE project_files SET display_name = %s, file_kind = %s, sprint = %s, updated_at = NOW() WHERE id = %s",
+                (display_name, file_kind or None, sprint, file_id),
             )
         conn.commit()
+    finally:
+        conn.close()
+
+
+def get_sprint_numbers(project_id: int):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT DISTINCT sprint FROM project_files WHERE project_id = %s AND sprint IS NOT NULL ORDER BY sprint",
+                (project_id,),
+            )
+            return [row[0] for row in cur.fetchall()]
     finally:
         conn.close()
 

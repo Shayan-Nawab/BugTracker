@@ -17,6 +17,7 @@
             {% endfor %}
         </select>
     </label><br>
+    <label>Sprint: <input type="number" name="sprint" min="1" step="1" placeholder="Optional"></label><br>
     <button type="submit">Add</button>
 </form>
 <a href="{{ url_for('project_detail', project_id=project.id) }}">Cancel</a>
