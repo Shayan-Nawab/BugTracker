@@ -93,7 +93,10 @@ def delete_project(project_id):
 @login_required
 def new_project():
     if request.method == "POST":
-        db.create_project(request.form["name"], request.form.get("description", ""), session["username"])
+        name = request.form.get("name", "").strip()
+        if not name:
+            return render_template("new_project.html", error="Project name is required.")
+        db.create_project(name, request.form.get("description", ""), session["username"])
         return redirect(url_for("projects"))
     return render_template("new_project.html")
 
@@ -126,11 +129,12 @@ def project_detail(project_id):
 def new_file(project_id):
     project = db.get_project_by_id(project_id)
     if request.method == "POST":
-        db.create_project_file(
-            project_id,
-            request.form["display_name"],
-            request.form.get("file_kind", ""),
-        )
+        display_name = request.form.get("display_name", "").strip()
+        file_kind = request.form.get("file_kind", "").strip()
+        if not display_name or not file_kind:
+            return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS,
+                                   error="Name and Type are required.")
+        db.create_project_file(project_id, display_name, file_kind)
         return redirect(url_for("project_detail", project_id=project_id))
     return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS)
 
@@ -185,14 +189,21 @@ def bugs(project_id, file_id):
 def new_bug(project_id, file_id):
     project = db.get_project_by_id(project_id)
     if request.method == "POST":
+        full_name = request.form.get("full_name", "").strip()
+        title = request.form.get("title", "").strip()
+        status = request.form.get("status", "").strip()
+        if not full_name or not title or not status:
+            return render_template("new_bug.html", project=project, file_id=file_id,
+                                   statuses=db.STATUSES, priorities=db.PRIORITIES,
+                                   error="Reporter name, title, and status are required.")
         db.create_bug_report(
             project_id, file_id,
-            request.form["full_name"],
-            request.form.get("status", "Open"),
+            full_name,
+            status,
             request.form.get("found_date", ""),
             request.form.get("fixed_date", ""),
             request.form.get("priority", "Medium"),
-            request.form.get("title", ""),
+            title,
             request.form.get("description", ""),
             request.form.get("progress_log", ""),
             request.form.get("additional_notes", ""),

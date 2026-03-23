@@ -10,10 +10,10 @@
 <h1>Edit Bug #{{ bug.id }}</h1>
 
 <form method="post">
-    <label>Title: <input type="text" name="title" value="{{ bug.title or '' }}"></label><br>
-    <label>Full Name: <input type="text" name="full_name" value="{{ bug.full_name }}" required></label><br>
-    <label>Status:
-        <select name="status">
+    <label>Title <span class="required-star">*</span>: <input type="text" name="title" value="{{ bug.title or '' }}" required></label><br>
+    <label>Full Name <span class="required-star">*</span>: <input type="text" name="full_name" value="{{ bug.full_name }}" required></label><br>
+    <label>Status <span class="required-star">*</span>:
+        <select name="status" required>
             {% for s in statuses %}
             <option {% if bug.status == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}

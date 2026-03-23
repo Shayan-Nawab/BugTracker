@@ -88,6 +88,8 @@ button { margin-top: 0.5rem; padding: 0.4rem 1rem; cursor: pointer; }
 
 .error { color: red; }
 
+.required-star { color: red; }
+
 .detail-header {
     display: flex;
     align-items: center;

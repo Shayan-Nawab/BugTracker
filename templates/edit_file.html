@@ -8,9 +8,12 @@
 {% block content %}
 <h1>Edit Item</h1>
 <form method="post">
-    <label>Name: <input type="text" name="display_name" value="{{ file.display_name }}" required></label><br>
-    <label>Type:
-        <select name="file_kind">
+    <label>Name <span class="required-star">*</span>: <input type="text" name="display_name" value="{{ file.display_name }}" required></label><br>
+    <label>Type <span class="required-star">*</span>:
+        <select name="file_kind" required>
+            {% if not file.file_kind %}
+            <option value="" disabled selected>-- Select type --</option>
+            {% endif %}
             {% for k in file_kinds %}
             <option value="{{ k }}" {% if file.file_kind == k %}selected{% endif %}>{{ k | replace('Product Backlog Item', 'Backlog Item') }}</option>
             {% endfor %}

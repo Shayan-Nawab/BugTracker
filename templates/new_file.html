@@ -6,10 +6,12 @@
 ] %}
 {% block content %}
 <h1>Add Item to {{ project.name }}</h1>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
 <form method="post">
-    <label>Name: <input type="text" name="display_name" required></label><br>
-    <label>Type:
-        <select name="file_kind">
+    <label>Name <span class="required-star">*</span>: <input type="text" name="display_name" required></label><br>
+    <label>Type <span class="required-star">*</span>:
+        <select name="file_kind" required>
+            <option value="" disabled selected>-- Select type --</option>
             {% for k in file_kinds %}
             <option value="{{ k }}">{{ k | replace('Product Backlog Item', 'Backlog Item') }}</option>
             {% endfor %}

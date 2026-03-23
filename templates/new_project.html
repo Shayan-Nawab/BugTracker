@@ -5,8 +5,9 @@
 ] %}
 {% block content %}
 <h1>New Project</h1>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
 <form method="post">
-    <label>Name: <input type="text" name="name" required></label><br>
+    <label>Name <span class="required-star">*</span>: <input type="text" name="name" required></label><br>
     <label>Description: <textarea name="description"></textarea></label><br>
     <button type="submit">Create</button>
 </form>
