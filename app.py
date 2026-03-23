@@ -77,7 +77,12 @@ def projects():
 def edit_project(project_id):
     project = db.get_project_by_id(project_id)
     if request.method == "POST":
-        db.update_project(project_id, request.form["name"], request.form.get("description", ""))
+        name = request.form.get("name", "").strip()
+        if not name:
+            return render_template("edit_project.html", project=project, error="Project name is required.")
+        if db.project_name_exists(name, session["username"], exclude_id=project_id):
+            return render_template("edit_project.html", project=project, error=f'A project named "{name}" already exists.')
+        db.update_project(project_id, name, request.form.get("description", ""))
         return redirect(url_for("project_detail", project_id=project_id))
     return render_template("edit_project.html", project=project)
 
@@ -96,6 +101,8 @@ def new_project():
         name = request.form.get("name", "").strip()
         if not name:
             return render_template("new_project.html", error="Project name is required.")
+        if db.project_name_exists(name, session["username"]):
+            return render_template("new_project.html", error=f'A project named "{name}" already exists.')
         db.create_project(name, request.form.get("description", ""), session["username"])
         return redirect(url_for("projects"))
     return render_template("new_project.html")
@@ -134,6 +141,9 @@ def new_file(project_id):
         if not display_name or not file_kind:
             return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS,
                                    error="Name and Type are required.")
+        if db.file_name_exists(project_id, display_name):
+            return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS,
+                                   error=f'An item named "{display_name}" already exists in this project.')
         db.create_project_file(project_id, display_name, file_kind)
         return redirect(url_for("project_detail", project_id=project_id))
     return render_template("new_file.html", project=project, file_kinds=db.FILE_KINDS)
@@ -145,7 +155,15 @@ def edit_file(project_id, file_id):
     project = db.get_project_by_id(project_id)
     file = db.get_project_file_by_id(file_id)
     if request.method == "POST":
-        db.update_project_file(file_id, request.form["display_name"], request.form.get("file_kind", ""))
+        display_name = request.form.get("display_name", "").strip()
+        file_kind = request.form.get("file_kind", "").strip()
+        if not display_name or not file_kind:
+            return render_template("edit_file.html", project=project, file=file,
+                                   file_kinds=db.FILE_KINDS, error="Name and Type are required.")
+        if db.file_name_exists(project_id, display_name, exclude_id=file_id):
+            return render_template("edit_file.html", project=project, file=file,
+                                   file_kinds=db.FILE_KINDS, error=f'An item named "{display_name}" already exists in this project.')
+        db.update_project_file(file_id, display_name, file_kind)
         return redirect(url_for("project_detail", project_id=project_id))
     return render_template("edit_file.html", project=project, file=file, file_kinds=db.FILE_KINDS)
 
@@ -196,6 +214,10 @@ def new_bug(project_id, file_id):
             return render_template("new_bug.html", project=project, file_id=file_id,
                                    statuses=db.STATUSES, priorities=db.PRIORITIES,
                                    error="Reporter name, title, and status are required.")
+        if db.bug_title_exists(file_id, title):
+            return render_template("new_bug.html", project=project, file_id=file_id,
+                                   statuses=db.STATUSES, priorities=db.PRIORITIES,
+                                   error=f'A bug titled "{title}" already exists in this item.')
         db.create_bug_report(
             project_id, file_id,
             full_name,
@@ -227,14 +249,25 @@ def bug_edit(bug_id):
     bug = db.get_bug_report_by_id(bug_id)
     project = db.get_project_by_id(bug["project_id"])
     if request.method == "POST":
+        full_name = request.form.get("full_name", "").strip()
+        title = request.form.get("title", "").strip()
+        status = request.form.get("status", "").strip()
+        if not full_name or not title or not status:
+            return render_template("bug.html", bug=bug, project=project,
+                                   statuses=db.STATUSES, priorities=db.PRIORITIES,
+                                   error="Reporter name, title, and status are required.")
+        if db.bug_title_exists(bug["project_file_id"], title, exclude_id=bug_id):
+            return render_template("bug.html", bug=bug, project=project,
+                                   statuses=db.STATUSES, priorities=db.PRIORITIES,
+                                   error=f'A bug titled "{title}" already exists in this item.')
         db.update_bug_report(
             bug_id,
-            request.form["full_name"],
-            request.form.get("status", "Open"),
+            full_name,
+            status,
             request.form.get("found_date", ""),
             request.form.get("fixed_date", ""),
             request.form.get("priority", "Medium"),
-            request.form.get("title", ""),
+            title,
             request.form.get("description", ""),
             request.form.get("progress_log", ""),
             request.form.get("additional_notes", ""),

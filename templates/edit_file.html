@@ -7,6 +7,7 @@
 ] %}
 {% block content %}
 <h1>Edit Item</h1>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
 <form method="post">
     <label>Name <span class="required-star">*</span>: <input type="text" name="display_name" value="{{ file.display_name }}" required></label><br>
     <label>Type <span class="required-star">*</span>:

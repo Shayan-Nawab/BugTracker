@@ -8,7 +8,7 @@
 ] %}
 {% block content %}
 <h1>Edit Bug #{{ bug.id }}</h1>
-
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
 <form method="post">
     <label>Title <span class="required-star">*</span>: <input type="text" name="title" value="{{ bug.title or '' }}" required></label><br>
     <label>Full Name <span class="required-star">*</span>: <input type="text" name="full_name" value="{{ bug.full_name }}" required></label><br>

@@ -130,6 +130,65 @@ def create_user(username: str, password: str) -> bool:
         conn.close()
 
 
+# ── Duplicate checks ──────────────────────────────────────────────────────────
+
+def project_name_exists(name: str, owner: str, exclude_id: int = None) -> bool:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            if exclude_id:
+                cur.execute(
+                    "SELECT 1 FROM projects WHERE LOWER(name) = LOWER(%s) AND owner = %s AND id != %s",
+                    (name, owner, exclude_id),
+                )
+            else:
+                cur.execute(
+                    "SELECT 1 FROM projects WHERE LOWER(name) = LOWER(%s) AND owner = %s",
+                    (name, owner),
+                )
+            return cur.fetchone() is not None
+    finally:
+        conn.close()
+
+
+def file_name_exists(project_id: int, display_name: str, exclude_id: int = None) -> bool:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            if exclude_id:
+                cur.execute(
+                    "SELECT 1 FROM project_files WHERE LOWER(display_name) = LOWER(%s) AND project_id = %s AND id != %s",
+                    (display_name, project_id, exclude_id),
+                )
+            else:
+                cur.execute(
+                    "SELECT 1 FROM project_files WHERE LOWER(display_name) = LOWER(%s) AND project_id = %s",
+                    (display_name, project_id),
+                )
+            return cur.fetchone() is not None
+    finally:
+        conn.close()
+
+
+def bug_title_exists(project_file_id: int, title: str, exclude_id: int = None) -> bool:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            if exclude_id:
+                cur.execute(
+                    "SELECT 1 FROM bug_reports WHERE LOWER(title) = LOWER(%s) AND project_file_id = %s AND id != %s",
+                    (title, project_file_id, exclude_id),
+                )
+            else:
+                cur.execute(
+                    "SELECT 1 FROM bug_reports WHERE LOWER(title) = LOWER(%s) AND project_file_id = %s",
+                    (title, project_file_id),
+                )
+            return cur.fetchone() is not None
+    finally:
+        conn.close()
+
+
 # ── Projects ──────────────────────────────────────────────────────────────────
 
 def create_project(name: str, description: str, owner: str):
